@@ -1,5 +1,5 @@
 *-----------------------------------------------------------
-* Title      : Saisir une chaine de caractères terminée par ';'
+* Title      : Saisir une chaine de caractÃ¨res terminÃ©e par ';'
 *-----------------------------------------------------------
     ORG    $400
     MOVE.L  #CHAINE,A0
@@ -11,7 +11,7 @@ REPETE:
     MOVE.B  D1,(A0)+
     BRA REPETE
 FIN_REPETE
-    MOVE.B #0,(A0) * désigne fin de chaine pour affchaine
+    MOVE.B #0,(A0) * dÃ©signe fin de chaine pour affchaine
     
 NEW_LINE:
     MOVE #13,D1 * carriage return
@@ -37,10 +37,3 @@ REPETE_PRINT:
 CHAINE: DC.B 100 
 
     END    $400        
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
