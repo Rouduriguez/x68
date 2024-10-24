@@ -13,7 +13,7 @@ REPETE:
     MOVE.B (A0)+,D3
     MOVE.B  D3,D4
     AND.B   #$F0,D3
-    LSR.B   #4,D3   * décalage à droite 2^4 = 16
+    LSR.B   #4,D3   * dÃ©calage Ã  droite 2^4 = 16
     AND.B   #$0F,D4
     MOVE.B  D3,D1
     JSR AFFQUARTET
@@ -30,17 +30,3 @@ FIN_REPETE:
     
     INCLUDE 'BIBLIO.x68'
     INCLUDE 'QUARTET.x68'
-    INCLUDE 'AFFCHAINE.x68'
-
-    ORG $600
-QUARTET_1:
-    DS.B    1
-QUARTET_2:   
-    DS.B    1 
-    END    $400        
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
