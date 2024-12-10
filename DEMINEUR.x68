@@ -2,13 +2,33 @@
 * Titre      : Projet Demineur
 * Ecrit par  : Valentin et Matthieu
 * Date       : 14 nov. 2024
-* Description: Corriger les couleurs correspondantes, et la modularité du tracé de la grille
+* Description: 
 *-----------------------------------------------------------
     ORG    $1000
 START:                  
     
+    
+    MOVE.L  #0,D6
+    MOVE.L  #0,D7   
+ATTENTE:
+    ADD.L   #1,D6
+    CMP.L   #10000,D6
+    BNE ATTENTE
+    MOVE.L  #0,D6
+    ADD.L   #1,D7
+    BRA ATTENTE
+FIN_ATTENTE:
+
     JSR PRINT_LIGNES_GRILLE
     JSR COULEUR_GRILLE
+    MOVE.L  #VICTOIRE,A1
+    MOVE.W  X_MAX,D1
+    ASR.W   #1,D1    
+    MOVE.W  X_MAX,D2
+    ADD.W   #20,D2    
+    JSR DRAW_STRING
+    
+
     
 BOUCLE_SOURIS:
     MOVE.L  #0,D1
@@ -28,7 +48,10 @@ CLIC_GAUCHE:
     
     JSR GET_I
     AND.L   #$000000FF,D1
+    ASL.B   #1,D1 * double l'index car pour chaque char il y a un 0 
     MOVE.B  (A0,D1),D5 * D5.B = contenu de la case
+    MOVE.B  D5,N
+    ASR.B   #1,D1
     DIVU    NB_COLONNES,D1
     MOVE.W  D1,D2
     MULU    LARGEUR_CASE,D2
@@ -44,13 +67,19 @@ CMP_COULEUR_CLIC:
     BEQ BOMBE
     CMP.B   #86,D5
     BEQ VIDE
-    MOVE.L  #$00ABCDEF,D1
+    BRA NOMBRE
 COULEUR_CLIC:
     JSR SET_FILL_COLOR
     MOVE.W  D3,D1
     SUB.W   LARGEUR_CASE,D1
     JSR DRAW_FILL_RECT   
     BRA BOUCLE_SOURIS
+    *MOVE.W  D3,D1
+    *MOVE.W  D4,D1
+    *MOVE.L  #N,A1
+    *SUB.W   CENTRE_CASE,D1
+    *SUB.W   CENTRE_CASE,D2
+    *JSR DRAW_STRING    
 FIN_BOUCLE_SOURIS:
 
 BOMBE:
@@ -61,8 +90,20 @@ VIDE:
     MOVE.L  #$00FFFFFF,D1
     BRA COULEUR_CLIC
     
-    
-              
+NOMBRE:
+    CMP.B   #$31,D5
+    BEQ UN
+    CMP.B   #$32,D5
+    BEQ DEUX
+    MOVE.L  #$0000A5FF,D1
+    BRA COULEUR_CLIC    
+UN:
+    MOVE.L  #$0090EE90,D1
+    BRA COULEUR_CLIC
+DEUX:
+    MOVE.L  #$0000FFFF,D1
+    BRA COULEUR_CLIC
+FIN_NOMBRE:              
 
     JMP FINPRG
   
@@ -73,19 +114,22 @@ VIDE:
 
     ORG $2000
     
-GRILLE_SOLUTION: DC.B 'B1VVV1211VV1B1VV111VVVVVV'
-*GRILLE_SOLUTION: DC.B 'B',0,'1',0,'V',0,'V',0,'V',0,'1',0,'2',0,'1',0, '1',0,'V',0,'V',0,'1',0,'B',0,'1',0,'V',0,'V',0,'1',0,'1',0,'1',0,'V',0,'V',0,'V',0,'V',0,'V',0,'V',0
-X_MAX:  DC.W 200
-NB_COLONNES: DC.W 10
-NB_TRAITS: DC.B 11 * = nbColonnes + 1
+*GRILLE_SOLUTION: DC.B 'B1VVV1211VV1B1VV111VVVVVV'
+GRILLE_SOLUTION: DC.B 'B',0,'2',0,'B',0,'1',0,'V',0,'1',0,'3',0,'2',0, '2',0,'V',0,'V',0,'1',0,'B',0,'1',0,'V',0,'V',0,'1',0,'1',0,'1',0,'V',0,'V',0,'V',0,'V',0,'V',0,'V',0
+X_MAX:  DC.W 400 * nb_colonnes * largeur_case
+LARGEUR_CASE: DC.W 80 * X_MAX / nbColonnes
+*CENTRE_CASE: DC.W 20 * largeur_case / 2
+NB_COLONNES: DC.W 5
+NB_TRAITS: DC.B 6 * = nbColonnes + 1
 PEN:    DC.B 2 * epaisseur du crayon
-LARGEUR_CASE: DC.W 40 * X_MAX / nbColonnes
+
 CHAINE: DC.B 'Bravo le clic gauche !',0
 COULEUR_CACHEE: DC.L $00E6E0B0
 COULEUR_REVELEE: DC.L $00FFFFFF
 COULEUR_CRAYON: DC.L $00BBBBBB
 X:  DS.W 1
 Y:  DS.W 1
+N:  DC.B 'N',0 * nombre de bombes à proximité
+VICTOIRE:   DC.B 'Bravo pour cette belle victoire !',0
 
     END    START      
-
