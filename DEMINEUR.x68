@@ -2,7 +2,7 @@
 * Titre      : Projet Demineur
 * Ecrit par  : Valentin et Matthieu
 * Date       : 14 nov. 2024
-* Description: 
+* Description: remplacer les V par 0, génération aléatoire de bombes et incrémentation des 0
 *-----------------------------------------------------------
     ORG    $1000
 START:                  
