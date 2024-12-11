@@ -1,0 +1,22 @@
+Deux points A (xA,yA) et B (xB,yB)
+
+PRINT_LIGNES_GRILLE :
+
+	Lignes verticales :
+	On initialise A = (0,0) et B = (0, xMax) avec xMax la taille de la grille
+	On trace une ligne entre les deux points. 
+	Tant qu'on n'a pas le nombre de lignes souhaité, on augmente de la largeur d'une case les abscisses de nos deux points : 
+		--> A = (xA + LC, 0) et B = (xB + LC, xMax) et on trace une nouvelle ligne.
+
+	Même principe pour les lignes horizontales :
+	On initialise A = (0,0) et B = (xMax,0) puis A = (0, yA + LC) et B = (xMax, yB + LC)
+	
+COULEUR_GRILLE :
+	On parcours la grille case par case, de gauche à droite de haut en bas.
+	Avec deux points A et B qui sont respectivement le coin supérieur gauche et le coin inférieur droit de la case.
+	On initialise A = (0,0) et B = (LC, LC) avec LC la largeur d'une case.
+	On trace un rectangle plein, puis on augmente les abscisses de nos deux points.
+		--> A = (xA + LC, yA) et B = (xB + LC, yB) et on trace une nouvelle ligne.
+	On continue jusqu'à ce qu'on atteigne l'extrémité droite de la grille.
+	Puis on réalise un "retour à la ligne" : A = (0, yA + LC) et B = (LC, yB + LC).
+	On reproduit l'idée tant que la grille n'est pas entièrement colorée.	
