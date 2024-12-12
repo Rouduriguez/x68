@@ -44,3 +44,26 @@ AFFCHAINE_BIS:
     BRA AFFCHAINE_BIS
 FIN_AFFCHAINE_BIS:
     RTS
+    
+AFF_DEC:
+    MOVE.L #NOMBRE_DECIMAL,A1
+REPETE_DECIMAL:
+    DIVU #10,D2 * résultat: 16 bits de poids forts = reste ; 16 bits de poids faibles = quotient
+    ROL.L #8,D2 * inverser l'ordre du résultat
+    ROL.L #8,D2
+    MOVE.B D2,(A1)+
+    ASR.L #8,D2   
+    ASR.L #8,D2
+    CMP.B #0,D2
+    BNE REPETE_DECIMAL
+    SUB.L #1,A1    * compenser la dernière incrémentation     
+AFFICHE_DECIMAL:
+    MOVE.B (A1),D1 
+    ADD.B #$30,D1   
+    JSR AFFCAR
+    CMP.L #NOMBRE_DECIMAL,A1
+    BEQ FIN_AFFICHE_DECIMAL
+    SUB.L #1,A1
+    BRA AFFICHE_DECIMAL
+FIN_AFFICHE_DECIMAL:    
+    RTS
