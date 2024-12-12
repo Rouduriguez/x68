@@ -20,3 +20,21 @@ COULEUR_GRILLE :
 	On continue jusqu'à ce qu'on atteigne l'extrémité droite de la grille.
 	Puis on réalise un "retour à la ligne" : A = (0, yA + LC) et B = (LC, yB + LC).
 	On reproduit l'idée tant que la grille n'est pas entièrement colorée.	
+
+Hésitation entre deux formats de grille :
+	- Séparer chaque caractère dans la chaine avec des 0, pour afficher les nombres avec DRAW_STRING 
+		ex:'B',0,'2',0,'B',0,'1',0,'0',0,'1',0,'3',0,'2',0, '2',0,'0',0,'0',0,'1',0,'B',0,'1',0,'0',0,'0',0,'1',0,'1',0,'1',0,'0',0,'0',0,'0',0,'0',0,'0',0,'0',0
+	- Une chaine simple et indiquer le nombre de bombes avec un code couleur
+		ex: 'B10001211001B100111B0B000'
+	Je décide de travailler sur ce dernier format pour l'instant, ça me parait plus simple.
+
+Génération "aléatoire" de grille : 
+	Avantage : 
+		- rejouabilité quasi infinie
+	Inconvénients:
+		- c'est facile de placer les bombes, mais placer les nombres l'est beaucoup moins.
+		- doit prendre en compte chaque bordure et chaque coin pour l'incrémentation : 
+			si une bombe est placée au centre, on doit ++ toutes les cases adjacentes, 
+			Alors qu'au coin milieu de la bordure gauche, on ne ++ pas les cases à gauche car celles-ci sont sur la droite de la grille
+
+	Si on ne génère pas aléatoirement, peut-être prévoir un certain nombre de grilles, et on en séléctionne une au hasard pour la partie en cours.
