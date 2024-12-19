@@ -38,3 +38,11 @@ Génération "aléatoire" de grille :
 			Alors qu'au coin milieu de la bordure gauche, on ne ++ pas les cases à gauche car celles-ci sont sur la droite de la grille
 
 	Si on ne génère pas aléatoirement, peut-être prévoir un certain nombre de grilles, et on en séléctionne une au hasard pour la partie en cours.
+
+Problème majeur (environ 6h pour le résoudre) : la partie se termine instantanément (victoire) après le 1er clic sur une case qui n'est pas une bombe
+	Cela n'arrive pas en mode débuggage, donc incompréhension. Après de nombreux, nombreux essais en isolé, puis en intégration, on en déduit que lors d'un simple clic
+	d'un point de vue humain, la machine en capte une multitude, ce qui diminue très rapidement le compteur à zero.
+	Pour y remédier, soit on change la couleur de la case jouée. Puis quand on clique sur une case, on vérifie la couleur et on ignore le clic si nécessaire.
+	Essayé, pas réussi.
+	Sinon, un "tableau de booléens" de longueur le nombre de cases. Toutes les valeurs étant initialisées à 0, si on clique sur la case i alors t[i] = 1.
+	Donc lors des vérifications avant de rentrer dans les calculs, si t[i] = 1 alors on ignore le clic et on retourne au départ.
