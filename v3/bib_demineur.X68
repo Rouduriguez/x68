@@ -1,3 +1,55 @@
+AFF_BTN_DIFFICULTE:
+    MOVE.L  #$00FF0000,D1
+    JSR SET_FILL_COLOR
+    MOVE.W  #100,D1
+    MOVE.W  #100,D2
+    MOVE.W  #200,D3
+    MOVE.W  #150,D4
+    JSR DRAW_FILL_RECT
+    MOVE.L  #$0000FF00,D1
+    JSR SET_FILL_COLOR
+    MOVE.W  D3,D1
+    ADD.W  #50,D1 * car D3 = D1 + 100
+    ADD.W  #150,D3
+    JSR DRAW_FILL_RECT
+    MOVE.L  #$000000FF,D1
+    JSR SET_FILL_COLOR
+    MOVE.W  D3,D1
+    ADD.W  #50,D1 
+    ADD.W  #150,D3
+    JSR DRAW_FILL_RECT
+    RTS
+    
+SETUP_FACILE:    * grille_facile += 25*rand(0,n-1) si on veut une grille random parmi n grilles
+    MOVE.L  #GRILLE_FACILE,A0
+    MOVE.W  #5,NB_COLONNES
+    MOVE.W  #135,LARGEUR_CASE
+    MOVE.W  #67,CENTRE_CASE
+    MOVE.W  #25,NB_CASES
+    MOVE.W  #3,NB_BOMBES
+    MOVE.W  #22,CASES_RESTANTES * affectation manuelle car bug sinon
+    BRA FIN_CHOIX_DIFFICULTE
+    
+SETUP_MOYEN:    * grille += 100*rand(0,n-1)
+    MOVE.L  #GRILLE_MOYENNE,A0
+    MOVE.W  #9,NB_COLONNES
+    MOVE.W  #75,LARGEUR_CASE
+    MOVE.W  #32,CENTRE_CASE
+    MOVE.W  #81,NB_CASES
+    MOVE.W  #10,NB_BOMBES
+    MOVE.W  #71,CASES_RESTANTES
+    BRA FIN_CHOIX_DIFFICULTE
+    
+SETUP_DIFFICILE:    * grille += 225*rand(0,n-1)
+    MOVE.L  #GRILLE_DIFFICILE,A0
+    MOVE.W  #15,NB_COLONNES
+    MOVE.W  #45,LARGEUR_CASE
+    MOVE.W  #22,CENTRE_CASE
+    MOVE.W  #225,NB_CASES
+    MOVE.W  #40,NB_BOMBES
+    MOVE.W  #185,CASES_RESTANTES
+    BRA FIN_CHOIX_DIFFICULTE
+
 RESET_D:
     MOVE.L  #0,D0
     MOVE.L  #0,D1
@@ -65,18 +117,18 @@ REPETE_COULEUR_HAUTEUR:
     JSR RESET_D
     RTS
         
-GET_I: * X/Y .W -> D1.B = indice de la case cliquee    
-    JSR RESET_D
-    *MOVE.L  #GRILLE_SOLUTION,A0
-    MOVE.W  X,D1
-    MOVE.W  Y,D2
+GET_I: * D1/D2 .W -> D6.W = indice de la case cliquee 
+    AND.L   #$0000FFFF,D1
+    AND.L   #$0000FFFF,D2   
     DIVU    LARGEUR_CASE,D1 * indice x
     DIVU    LARGEUR_CASE,D2 * indice y
     MULU    NB_COLONNES,D2   
     ADD.W   D2,D1
+    MOVE.W  D1,D6
+    
     RTS
     
-XY_CASE: * i dans D6, retourne dans D1-4
+XY_CASE: * i dans D6, retourne X/Ydans D1,2/D3,4
     MOVE.W  D6,D1
     DIVU    NB_COLONNES,D1
     MOVE.W  D1,D2
@@ -97,7 +149,7 @@ COULEUR_NOMBRE:
     BEQ UN
     CMP.B   #$32,N
     BEQ DEUX
-    MOVE.L  #$0000A5FF,D1 * N >= 3, à continuer si je décide de mettre N>3 ?
+    MOVE.L  #$0000A5FF,D1 * N >= 3, Ã  continuer si je dÃ©cide de mettre N>3 ?
     BRA FIN_COULEUR_NOMBRE 
 ZERO:   
     MOVE.L  #$00000000,D1
@@ -117,7 +169,7 @@ VICTOIRE:
     JSR SET_FILL_COLOR
     MOVE.L  #MSG_VICTOIRE,A1
     MOVE.W  X_MAX,D1
-    ASR.W   #1,D1    
+    ASR.W   #2,D1    
     MOVE.W  X_MAX,D2
     ADD.W   #20,D2    
     JSR DRAW_STRING
@@ -127,13 +179,13 @@ AFF_CHRONO:
     *MOVE.L #CHAINE_CHRONO,A2
 REPETE_DECIMAL:
     MOVE.L  CHRONO,D7
-    DIVU #10,D7 * résultat: 16 bits de poids forts = reste ; 16 bits de poids faibles = quotient
+    DIVU #10,D7 * rÃ©sultat: 16 bits de poids forts = reste ; 16 bits de poids faibles = quotient
     SWAP    D7
     MOVE.B D7,(A2)+
     SWAP    D7
     CMP.B #0,D7
     BNE REPETE_DECIMAL
-    SUB.L #1,A2    * compenser la dernière incrémentation     
+    SUB.L #1,A2    * compenser la derniÃ¨re incrÃ©mentation     
 AFFICHE_CHRONO:
     MOVE.B (A2),D1 
     ADD.B #$30,D1   
@@ -170,12 +222,3 @@ REPETE_CHAR_HAUTEUR:
     BNE REPETE_CHAR_LARGEUR
     JSR RESET_D
     RTS
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
