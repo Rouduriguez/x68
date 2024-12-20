@@ -19,14 +19,16 @@ COULEUR_GRILLE :
 		--> A = (xA + LC, yA) et B = (xB + LC, yB) et on trace une nouvelle ligne.
 	On continue jusqu'à ce qu'on atteigne l'extrémité droite de la grille.
 	Puis on réalise un "retour à la ligne" : A = (0, yA + LC) et B = (LC, yB + LC).
-	On reproduit l'idée tant que la grille n'est pas entièrement colorée.	
+	On reproduit l'idée tant que la grille n'est pas entièrement colorée.
+	EN FAIT, on peut juste tracer un seul carré de la taille de la surface de jeu. Puis on dessine les lignes dessus.
 
 Hésitation entre deux formats de grille :
 	- Séparer chaque caractère dans la chaine avec des 0, pour afficher les nombres avec DRAW_STRING 
 		ex:'B',0,'2',0,'B',0,'1',0,'0',0,'1',0,'3',0,'2',0, '2',0,'0',0,'0',0,'1',0,'B',0,'1',0,'0',0,'0',0,'1',0,'1',0,'1',0,'0',0,'0',0,'0',0,'0',0,'0',0,'0',0
 	- Une chaine simple et indiquer le nombre de bombes avec un code couleur
 		ex: 'B10001211001B100111B0B000'
-	Je décide de travailler sur ce dernier format pour l'instant, ça me parait plus simple.
+	J'ai d'abord décidé de travailler sur ce dernier format car ça me paraissait plus simple pour débuter le projet.
+	Mais si je veux afficher les nombres, le plus pratique est d'utiliser DRAW_STRING, car avec AFFCAR il faut manipuler les numéros de lignes et de colonnes ...
 
 Génération "aléatoire" de grille : 
 	Avantage : 
@@ -46,3 +48,8 @@ Problème majeur (environ 6h pour le résoudre) : la partie se termine instantan
 	Essayé, pas réussi.
 	Sinon, un "tableau de booléens" de longueur le nombre de cases. Toutes les valeurs étant initialisées à 0, si on clique sur la case i alors t[i] = 1.
 	Donc lors des vérifications avant de rentrer dans les calculs, si t[i] = 1 alors on ignore le clic et on retourne au départ.
+
+Dès que nous avons un jeu qui démarre, qui s'arrête en cas de défaite ou de victoire, nous pouvons développer des fonctionnalités intéressantes.
+Je décide de bosser sur le choix de difficulté. En déclarant la chaine de la grille moyenne, je rencontre un problème de syntaxe qui apparait après un certain nombre de caractères dans la chaine. Je suppose que c'est l'instruction qui est trop longue, car pour chaque caractère (100), il y a un 0 pour le DRAW_STRING.
+J'ai donc l'idée de "déclarer une variable" CHAR en .W qui sera composé du caractère à afficher sur l'octet de poids fort, et d'un 0 sur l'octet de poids faible.
+On réunit donc les avantages des deux formats de grille
