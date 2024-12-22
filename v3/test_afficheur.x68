@@ -1,0 +1,127 @@
+*-----------------------------------------------------------
+* Title      : Afficheur 7 segments 0 A 999
+
+*-----------------------------------------------------------
+    ORG    $1000
+START:                
+
+    MOVE.L  COULEUR_SEG,D1
+    JSR SET_PEN_COLOR
+    MOVE.B  #10,D1
+    JSR WIDTH_PEN
+    
+    MOVE.L  #0,D7
+      
+BOUCLE:
+    JSR EFFACER_CENTAINE
+    DIVU    #100,D7 
+CMP_AFFICHEUR_CENTAINE: * faire 0 A 10 avec gestion du 10
+    CMP.B   #0,D7
+    BEQ CENTAINE_ZERO
+    CMP.B   #1,D7
+    BEQ CENTAINE_UN
+    CMP.B   #2,D7
+    BEQ CENTAINE_DEUX
+    CMP.B   #3,D7
+    BEQ CENTAINE_TROIS
+    CMP.B   #4,D7
+    BEQ CENTAINE_QUATRE
+    CMP.B   #5,D7
+    BEQ CENTAINE_CINQ
+    CMP.B   #6,D7
+    BEQ CENTAINE_SIX
+    CMP.B   #7,D7
+    BEQ CENTAINE_SEPT
+    CMP.B   #8,D7
+    BEQ CENTAINE_HUIT
+    CMP.B   #9,D7
+    BEQ CENTAINE_NEUF
+FIN_CMP_AFFICHEUR_CENTAINE:
+    SWAP    D7
+    AND.L   #$0000FFFF,D7
+    DIVU    #10,D7
+    JSR EFFACER_DIZAINE
+    
+CMP_AFFICHEUR_DIZAINE: * faire 0 A 10 avec gestion du 10
+    CMP.B   #0,D7
+    BEQ DIZAINE_ZERO
+    CMP.B   #1,D7
+    BEQ DIZAINE_UN
+    CMP.B   #2,D7
+    BEQ DIZAINE_DEUX
+    CMP.B   #3,D7
+    BEQ DIZAINE_TROIS
+    CMP.B   #4,D7
+    BEQ DIZAINE_QUATRE
+    CMP.B   #5,D7
+    BEQ DIZAINE_CINQ
+    CMP.B   #6,D7
+    BEQ DIZAINE_SIX
+    CMP.B   #7,D7
+    BEQ DIZAINE_SEPT
+    CMP.B   #8,D7
+    BEQ DIZAINE_HUIT
+    CMP.B   #9,D7
+    BEQ DIZAINE_NEUF
+FIN_CMP_AFFICHEUR_DIZAINE:
+
+    SWAP    D7
+    AND.L   #$0000FFFF,D7
+    JSR EFFACER_UNITE
+    
+CMP_AFFICHEUR_UNITE: * faire 0 A 10 avec gestion du 10
+    CMP.B   #0,D7
+    BEQ UNITE_ZERO
+    CMP.B   #1,D7
+    BEQ UNITE_UN
+    CMP.B   #2,D7
+    BEQ UNITE_DEUX
+    CMP.B   #3,D7
+    BEQ UNITE_TROIS
+    CMP.B   #4,D7
+    BEQ UNITE_QUATRE
+    CMP.B   #5,D7
+    BEQ UNITE_CINQ
+    CMP.B   #6,D7
+    BEQ UNITE_SIX
+    CMP.B   #7,D7
+    BEQ UNITE_SEPT
+    CMP.B   #8,D7
+    BEQ UNITE_HUIT
+    CMP.B   #9,D7
+    BEQ UNITE_NEUF
+FIN_CMP_AFFICHEUR_UNITE:
+    MOVE.L  #0,D6
+ATTENTE:
+    ADD.L   #1,D6
+    CMP.L   #$00003000,D6 * 20000 = 1 sec sur mon laptop
+    BMI ATTENTE
+FIN_ATTENTE:
+    
+    ADD.W   #1,TIMER
+    MOVE.W  TIMER,D7
+    CMP.W   #1000,D7
+    BNE BOUCLE
+
+
+    
+    JMP FINPRG
+
+    INCLUDE 'BIBLIO.x68'
+    INCLUDE 'BIBGRAPH.x68'
+    INCLUDE 'BIB_AFFICHEUR.x68'
+    INCLUDE 'BIB_SEGMENTS.x68'
+    
+    ORG     $3000
+TIMER:  DC.W    0
+COULEUR_SEG:    DC.L $000000FF
+OX_CENTAINE: DC.W 50
+OX_DIZAINE: DC.W 175
+OX_UNITE: DC.W  300
+OX_AFFICHEUR:    DC.W 50
+OY_AFFICHEUR:    DC.W 50
+LON_SEG:    DC.W 100
+
+    
+
+    END    START
