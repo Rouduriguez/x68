@@ -67,13 +67,35 @@ SET_ORIGINE_GRILLE:
     ADD.W   OY_GRILLE,D4
     RTS
 
-PRINT_LIGNES_GRILLE:
+INTERFACE:
     MOVE.L  COULEUR_FOND,D1
     JSR SET_FILL_COLOR
     JSR RESET_D
-    MOVE.W  RES_X,D3
-    MOVE.W  RES_Y,D4
+    MOVE.W  OX_GRILLE,D3
+    ASL.W   #1,D3
+    ADD.W   X_MAX,D3
+    MOVE.W  OY_GRILLE,D4
+    ASL.W   #1,D4
+    ADD.W   X_MAX,D4
     JSR DRAW_FILL_RECT * fond gris
+    MOVE.L  #$00000000,D1
+    JSR SET_FILL_COLOR
+    MOVE.W  OX_AFFICHEUR_1,D1
+    MOVE.W  OY_AFFICHEUR,D2
+    MOVE.W  D1,D3
+    MOVE.W  D2,D4
+    ADD.W   DX_AFFICHEUR,D3
+    ADD.W   DY_AFFICHEUR,D4
+    JSR DRAW_FILL_RECT
+    MOVE.W  OX_AFFICHEUR_2,D1
+    MOVE.W  D1,D3
+    ADD.W   DX_AFFICHEUR,D3
+    JSR DRAW_FILL_RECT
+    RTS
+FIN_INTERFACE:
+
+PRINT_LIGNES_GRILLE:
+    
     MOVE.L #$00FFFFFF,D1
     JSR SET_PEN_COLOR
     MOVE.B #3,D1
@@ -168,7 +190,7 @@ COULEUR_NOMBRE:
     BEQ UN
     CMP.B   #$32,N
     BEQ DEUX
-    MOVE.L  #$0000A5FF,D1 * N >= 3, Ã  continuer si je dÃ©cide de mettre N>3 ?
+    MOVE.L  #$0000A5FF,D1 * N >= 3, à continuer si je décide de mettre N>3 ?
     BRA FIN_COULEUR_NOMBRE 
 ZERO:   
     MOVE.L  #$00000000,D1
@@ -222,3 +244,8 @@ REPETE_CHAR_HAUTEUR:
     RTS
 
 
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
