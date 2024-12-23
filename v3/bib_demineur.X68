@@ -23,8 +23,8 @@ AFF_BTN_DIFFICULTE:
 SETUP_FACILE:    * grille_facile += 25*rand(0,n-1) si on veut une grille random parmi n grilles
     MOVE.L  #GRILLE_FACILE,A0
     MOVE.W  #5,NB_COLONNES
-    MOVE.W  #135,LARGEUR_CASE
-    MOVE.W  #67,CENTRE_CASE
+    MOVE.W  #90,LARGEUR_CASE
+    MOVE.W  #45,CENTRE_CASE
     MOVE.W  #25,NB_CASES
     MOVE.W  #3,NB_BOMBES
     MOVE.W  #22,CASES_RESTANTES * affectation manuelle car bug sinon
@@ -33,8 +33,8 @@ SETUP_FACILE:    * grille_facile += 25*rand(0,n-1) si on veut une grille random 
 SETUP_MOYEN:    * grille += 100*rand(0,n-1)
     MOVE.L  #GRILLE_MOYENNE,A0
     MOVE.W  #9,NB_COLONNES
-    MOVE.W  #75,LARGEUR_CASE
-    MOVE.W  #32,CENTRE_CASE
+    MOVE.W  #50,LARGEUR_CASE
+    MOVE.W  #25,CENTRE_CASE
     MOVE.W  #81,NB_CASES
     MOVE.W  #10,NB_BOMBES
     MOVE.W  #71,CASES_RESTANTES
@@ -43,8 +43,8 @@ SETUP_MOYEN:    * grille += 100*rand(0,n-1)
 SETUP_DIFFICILE:    * grille += 225*rand(0,n-1)
     MOVE.L  #GRILLE_DIFFICILE,A0
     MOVE.W  #15,NB_COLONNES
-    MOVE.W  #45,LARGEUR_CASE
-    MOVE.W  #22,CENTRE_CASE
+    MOVE.W  #30,LARGEUR_CASE
+    MOVE.W  #15,CENTRE_CASE
     MOVE.W  #225,NB_CASES
     MOVE.W  #40,NB_BOMBES
     MOVE.W  #185,CASES_RESTANTES
@@ -60,14 +60,26 @@ RESET_D:
     MOVE.L  #0,D6
     *MOVE.L  #0,D7
     RTS
+SET_ORIGINE_GRILLE:
+    ADD.W   OX_GRILLE,D1
+    ADD.W   OX_GRILLE,D3
+    ADD.W   OY_GRILLE,D2
+    ADD.W   OY_GRILLE,D4
+    RTS
 
 PRINT_LIGNES_GRILLE:
+    MOVE.L  COULEUR_FOND,D1
+    JSR SET_FILL_COLOR
     JSR RESET_D
+    MOVE.W  RES_X,D3
+    MOVE.W  RES_Y,D4
+    JSR DRAW_FILL_RECT * fond gris
     MOVE.L #$00FFFFFF,D1
     JSR SET_PEN_COLOR
     MOVE.B #3,D1
     JSR WIDTH_PEN
     JSR RESET_D
+    JSR SET_ORIGINE_GRILLE
     MOVE X_MAX,D4
 LIGNES_VERTICALES:
     JSR DRAW_LINE
@@ -79,6 +91,7 @@ LIGNES_VERTICALES:
 FIN_LIGNES_VERTICALES:
     JSR RESET_D
     MOVE X_MAX,D3
+    JSR SET_ORIGINE_GRILLE
 LIGNES_HORIZONTALES:
     JSR DRAW_LINE
     ADD.W LARGEUR_CASE,D2
@@ -98,6 +111,7 @@ COULEUR_GRILLE: * compteurs : D5 pour x et D6 y
     JSR RESET_D
     MOVE.W  LARGEUR_CASE,D3
     MOVE.W  LARGEUR_CASE,D4   
+    JSR SET_ORIGINE_GRILLE
 REPETE_COULEUR_LARGEUR:  
     JSR DRAW_FILL_RECT
     ADD.W   LARGEUR_CASE,D1
@@ -108,6 +122,8 @@ REPETE_COULEUR_LARGEUR:
 REPETE_COULEUR_HAUTEUR:
     MOVE.W  #0,D1 * "retour chariot"
     MOVE.W  LARGEUR_CASE,D3
+    ADD.W   OX_GRILLE,D1
+    ADD.W   OX_GRILLE,D3
     ADD.W   LARGEUR_CASE,D2
     ADD.W   LARGEUR_CASE,D4
     MOVE.W  #0,D5    
@@ -118,6 +134,8 @@ REPETE_COULEUR_HAUTEUR:
     RTS
         
 GET_I: * D1/D2 .W -> D6.W = indice de la case cliquee 
+    SUB.W   OX_GRILLE,D1
+    SUB.W   OY_GRILLE,D2
     AND.L   #$0000FFFF,D1
     AND.L   #$0000FFFF,D2   
     DIVU    LARGEUR_CASE,D1 * indice x
@@ -140,6 +158,7 @@ XY_CASE: * i dans D6, retourne X/Ydans D1,2/D3,4
     ADD.W   LARGEUR_CASE,D3
     MOVE.W  D2,D4
     ADD.W   LARGEUR_CASE,D4
+    JSR SET_ORIGINE_GRILLE
     RTS
 
 COULEUR_NOMBRE:
@@ -149,7 +168,7 @@ COULEUR_NOMBRE:
     BEQ UN
     CMP.B   #$32,N
     BEQ DEUX
-    MOVE.L  #$0000A5FF,D1 * N >= 3, à continuer si je décide de mettre N>3 ?
+    MOVE.L  #$0000A5FF,D1 * N >= 3, Ã  continuer si je dÃ©cide de mettre N>3 ?
     BRA FIN_COULEUR_NOMBRE 
 ZERO:   
     MOVE.L  #$00000000,D1
@@ -172,29 +191,8 @@ VICTOIRE:
     ASR.W   #2,D1    
     MOVE.W  X_MAX,D2
     ADD.W   #20,D2    
+    JSR SET_ORIGINE_GRILLE
     JSR DRAW_STRING
-    RTS
-
-AFF_CHRONO:
-    *MOVE.L #CHAINE_CHRONO,A2
-REPETE_DECIMAL:
-    MOVE.L  CHRONO,D7
-    DIVU #10,D7 * résultat: 16 bits de poids forts = reste ; 16 bits de poids faibles = quotient
-    SWAP    D7
-    MOVE.B D7,(A2)+
-    SWAP    D7
-    CMP.B #0,D7
-    BNE REPETE_DECIMAL
-    SUB.L #1,A2    * compenser la dernière incrémentation     
-AFFICHE_CHRONO:
-    MOVE.B (A2),D1 
-    ADD.B #$30,D1   
-    JSR AFFCAR
-    CMP.L #CHAINE_CHRONO,A2
-    BEQ FIN_AFFICHE_CHRONO
-    SUB.L #1,A2
-    BRA AFFICHE_CHRONO
-FIN_AFFICHE_CHRONO:    
     RTS
 
 PRINT_CHAR_GRILLE: * compteurs : D3 pour x et D4 y
@@ -222,3 +220,5 @@ REPETE_CHAR_HAUTEUR:
     BNE REPETE_CHAR_LARGEUR
     JSR RESET_D
     RTS
+
+
