@@ -5,22 +5,20 @@
 *              imiter l'interface du demineur OG !!!
 *-----------------------------------------------------------
 *               D1-4.W = XY ; 
-*               (D5 = cpt de cases restantes) ; 
-*               D6.W = indice tab ; D7 = attente (combiner avec D0 ?)
+*               ---(D5 = cpt de cases restantes)--- ; 
+*               D6.W = indice tab ; D7 = afficheur
 *               A0 = grille solution
 *               A1 = DRAW_STRING
-*               A2 = timer
-*               ---A3 = chaine_clic---
+*               
+*               
 *-----------------------------------------------------------
     ORG    $1000
 START:                  
     MOVE.W  RES_X,D1 * largeur
     SWAP    D1
     MOVE.W  RES_Y,D1 * hauteur
-    JSR RESOLUTION
-    
+    JSR RESOLUTION 
     MOVE.L  #N,A1
-    *MOVE.L  #CHAINE_CLIC,A3
     JSR AFF_BTN_DIFFICULTE * soigner l'ecran de selection    
 CHOIX_DIFFICULTE:
     MOVE.L  #0,D1
@@ -48,35 +46,51 @@ CHARGEMENT: * delai avant de lancer la partie
 FIN_CHARGEMENT:
     MOVE.W  NB_COLONNES,NB_TRAITS
     ADD.W  #1,NB_TRAITS
-    *MOVE.W  NB_CASES,D1
-    *SUB.W   NB_BOMBES,D1
-    *MOVE.W  D1,CASES_RESTANTES
+    MOVE.W  NB_CASES,D1
+    SUB.W   NB_BOMBES,D1
+    MOVE.W  D1,CASES_RESTANTES
+    MOVE.W  LARGEUR_CASE,D1
+    ASR.W   #1,D1
+    MOVE.W  D1,CENTRE_CASE
     MOVE.W  #$FF00,D1
     JSR POS_CURS * Efface l'ecran
     JSR INTERFACE
     JSR PRINT_LIGNES_GRILLE
     JSR COULEUR_GRILLE
-    ADD.W   #5,OY_AFFICHEUR 
+    ADD.W   #5,OY_AFFICHEUR * ajuste position des compteurs
     JSR AFFICHE_CHRONO
     JSR AFFICHE_SCORE
-
+    
 BOUCLE_SOURIS:
+    MOVE.L  #0,BUFFER_CHRONO
+    MOVE.L  BUFFER_CHRONO,D7
+ATTENTE_BOUCLE_SOURIS:
+    ADD.L   #1,D7    
     MOVE.L  #0,D1
     JSR GET_MOUSE
     AND.B   #1,D0
-    CMP.B   #1,D0
-    BNE BOUCLE_SOURIS    
+    CMP.B   #1,D0 * gerer le clic droit
+    BEQ CLIC_GAUCHE
+    CMP.L   #$00002000,D7 * 20000 = 1 sec sur mon laptop
+    BMI ATTENTE_BOUCLE_SOURIS    
+    ADD.W   #1,CHRONO
+    JSR AFFICHE_CHRONO    
+    BRA BOUCLE_SOURIS 
+CLIC_GAUCHE:
+    MOVE.L  D7,BUFFER_CHRONO
     SWAP    D1
     MOVE.W  D1,D2
     SWAP    D1
     JSR GET_PIX_COLOR  * controle la couleur de la case cliquee
     CMP.L   COULEUR_CACHEE,D0
-    BNE BOUCLE_SOURIS    
+    BNE ATTENTE_BOUCLE_SOURIS    
 
     JSR GET_I
     MOVE.B  (A0,D6),N * N = contenu de la case
+    MOVE.L  COULEUR_CRAYON,D1
+    JSR SET_PEN_COLOR
     MOVE.L  #$00000000,D1
-    JSR SET_FILL_COLOR
+    JSR SET_FILL_COLOR    
     JSR XY_CASE
     JSR DRAW_FILL_RECT
     MOVE.W  D1,D3
@@ -95,7 +109,7 @@ COULEUR_CLIC:
     JSR AFFICHE_SCORE
     *MOVE.W  CASES_RESTANTES,D5
     CMP.W   #0,CASES_RESTANTES
-    BNE BOUCLE_SOURIS
+    BNE ATTENTE_BOUCLE_SOURIS
     JSR VICTOIRE
     BRA FIN
 FIN_BOUCLE_SOURIS: 
@@ -123,6 +137,7 @@ SUITE_REVELE_BOMBES:
     MOVE.W  X_MAX,D2
     ADD.W   #20,D2    
     JSR SET_ORIGINE_GRILLE
+    JSR DRAW_STRING
 FIN_DEFAITE:  
     BRA FIN
     
@@ -164,7 +179,7 @@ CHRONO:  DC.W    0
 * afficheur : dx = 155, dy = 70, lon_seg = 30
 X:  DS.W 1
 Y:  DS.W 1
-
+BUFFER_CHRONO:  DC.L 0
 COULEUR_CACHEE: DC.L $00E6E0B0
 COULEUR_CRAYON: DC.L $00BBBBBB
 COULEUR_FOND:   DC.L $00D3D3D3
@@ -174,6 +189,7 @@ N:  DC.W 0
 NB_CASES:   DS.W 1
 NB_BOMBES:  DS.W 1
 CASES_RESTANTES: DC.W 0
+BUFFER_CLIC:    DC.B 0
 MSG_VICTOIRE:   DC.B 'Bravo pour cette belle victoire !',0
 MSG_DEFAITE:    DC.B 'Dommage ! C est perdu...',0
 GRILLE_FACILE: DC.B 'B2B101322001B100111000000'
