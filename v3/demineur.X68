@@ -1,8 +1,8 @@
 *-----------------------------------------------------------
 * Description:            
-*              garder Xmax constant, ou le modifier en fonction de la difficulte ?
+*              systeme de flag a revoir
 *              "random"
-*              imiter l'interface du demineur OG !!!
+*              lancer une nouvelle partie
 *-----------------------------------------------------------
 *               D1-4.W = XY ; 
 *               ---(D5 = cpt de cases restantes)--- ; 
@@ -18,8 +18,8 @@ START:
     SWAP    D1
     MOVE.W  RES_Y,D1 * hauteur
     JSR RESOLUTION 
-    MOVE.L  #N,A1
-    JSR AFF_BTN_DIFFICULTE * soigner l'ecran de selection    
+    JSR INTERFACE_DIFFICULTE * soigner l'ecran de selection
+    MOVE.L  #N,A1 * contenu de la case
 CHOIX_DIFFICULTE:
     MOVE.L  #0,D1
     JSR GET_MOUSE
@@ -47,7 +47,7 @@ FIN_CHARGEMENT:
     MOVE.W  NB_COLONNES,NB_TRAITS
     ADD.W  #1,NB_TRAITS
     MOVE.W  NB_CASES,D1
-    SUB.W   NB_BOMBES,D1
+    SUB.W   NB_MINES,D1
     MOVE.W  D1,CASES_RESTANTES
     MOVE.W  LARGEUR_CASE,D1
     ASR.W   #1,D1
@@ -62,20 +62,52 @@ FIN_CHARGEMENT:
     JSR AFFICHE_SCORE
     
 BOUCLE_SOURIS:
-    MOVE.L  #0,BUFFER_CHRONO
     MOVE.L  BUFFER_CHRONO,D7
+    MOVE.L  #0,BUFFER_CHRONO    
 ATTENTE_BOUCLE_SOURIS:
     ADD.L   #1,D7    
     MOVE.L  #0,D1
     JSR GET_MOUSE
-    AND.B   #1,D0
-    CMP.B   #1,D0 * gerer le clic droit
+    AND.B   #3,D0
+    CMP.B   #1,D0 
     BEQ CLIC_GAUCHE
+    CMP.B   #2,D0 
+    BEQ CLIC_DROIT
     CMP.L   #$00002000,D7 * 20000 = 1 sec sur mon laptop
     BMI ATTENTE_BOUCLE_SOURIS    
     ADD.W   #1,CHRONO
     JSR AFFICHE_CHRONO    
     BRA BOUCLE_SOURIS 
+    
+CLIC_DROIT:
+    SWAP    D1
+    MOVE.W  D1,D2
+    SWAP    D1
+    JSR GET_PIX_COLOR  * controle la couleur de la case cliquee
+    CMP.L   COULEUR_CACHEE,D0
+    BEQ FLAG
+    CMP.L   COULEUR_FLAG,D0
+    BEQ DEFLAG
+    BRA BOUCLE_SOURIS
+FLAG:
+    JSR GET_I
+    MOVE.L  COULEUR_FLAG,D1
+    JSR SET_FILL_COLOR
+    JSR XY_CASE
+    JSR DRAW_FILL_RECT
+    SUB.W   #1,NB_MINES
+    MOVE.W  NB_MINES,D5
+    BRA BOUCLE_SOURIS
+DEFLAG:
+    JSR GET_I
+    MOVE.L  COULEUR_CACHEE,D1
+    JSR SET_FILL_COLOR
+    JSR XY_CASE
+    JSR DRAW_FILL_RECT
+    ADD.W   #1,NB_MINES
+    MOVE.W  NB_MINES,D5
+    BRA BOUCLE_SOURIS  
+    
 CLIC_GAUCHE:
     MOVE.L  D7,BUFFER_CHRONO
     SWAP    D1
@@ -89,7 +121,7 @@ CLIC_GAUCHE:
     MOVE.B  (A0,D6),N * N = contenu de la case
     MOVE.L  COULEUR_CRAYON,D1
     JSR SET_PEN_COLOR
-    MOVE.L  #$00000000,D1
+    MOVE.L  #$00000000,D1 * COULEUR_REVELEE
     JSR SET_FILL_COLOR    
     JSR XY_CASE
     JSR DRAW_FILL_RECT
@@ -114,22 +146,22 @@ COULEUR_CLIC:
     BRA FIN
 FIN_BOUCLE_SOURIS: 
 
-BOMBE:
+MINE:
     JSR XY_CASE
     JSR DRAW_FILL_RECT    
-    BRA SUITE_REVELE_BOMBES
+    BRA SUITE_REVELE_MINES
 
 DEFAITE:
     MOVE.L  #$000000FF,D1
     JSR SET_FILL_COLOR
     MOVE.W  #0,D6 * indice tableau
-REVELE_BOMBES:    
+REVELE_MINES:    
     CMP.B   #66,(A0,D6)
-    BEQ BOMBE
-SUITE_REVELE_BOMBES:
+    BEQ MINE
+SUITE_REVELE_MINES:
     ADD.W   #1,D6
     CMP.W   NB_CASES,D6
-    BNE REVELE_BOMBES
+    BNE REVELE_MINES
     
     MOVE.L  #MSG_DEFAITE,A1
     MOVE.W  X_MAX,D1
@@ -181,13 +213,15 @@ X:  DS.W 1
 Y:  DS.W 1
 BUFFER_CHRONO:  DC.L 0
 COULEUR_CACHEE: DC.L $00E6E0B0
+COULEUR_FLAG: DC.L $00AAAA00
 COULEUR_CRAYON: DC.L $00BBBBBB
 COULEUR_FOND:   DC.L $00D3D3D3
+COULEUR_AFFICHEUR:  DC.L $00000000
 CHAR:   DC.W 0
 N:  DC.W 0
 
 NB_CASES:   DS.W 1
-NB_BOMBES:  DS.W 1
+NB_MINES:  DS.W 1
 CASES_RESTANTES: DC.W 0
 BUFFER_CLIC:    DC.B 0
 MSG_VICTOIRE:   DC.B 'Bravo pour cette belle victoire !',0
@@ -195,8 +229,13 @@ MSG_DEFAITE:    DC.B 'Dommage ! C est perdu...',0
 GRILLE_FACILE: DC.B 'B2B101322001B100111000000'
 GRILLE_MOYENNE:	DC.B '00001110000001B210000013B20000003B30111112B20B11B1111012221000012B211111B212B11B1'
 GRILLE_DIFFICILE: DC.B '0001110000000111111B211000001B2B2223B332100112B32B22BBB2121112B32224B43B2B1122B11B323B2211B2122213B311011B312B102B31102BB21B221212B113B111111B101222B200000122112B3210000112B22B3B1000001B33B213231110124B31101B2BB101B3B20001121'
+CHAINE_DIFFICULTE:  DC.B 'Choix de la difficulte...',0
+CHAINE_FACILE:  DC.B 'Facile',0
+CHAINE_MOYEN:   DC.B 'Moyen',0
+CHAINE_DIFFICILE: DC.B 'Difficile',0
 
     END    START 
+
 
 
 

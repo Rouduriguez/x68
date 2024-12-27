@@ -1,23 +1,71 @@
+INTERFACE_DIFFICULTE:
+    MOVE.L  COULEUR_FOND,D1
+    JSR SET_FILL_COLOR
+    JSR RESET_D
+    MOVE.W  OX_GRILLE,D3
+    ASL.W   #1,D3
+    ADD.W   X_MAX,D3
+    MOVE.W  OY_GRILLE,D4
+    ASL.W   #1,D4
+    ADD.W   X_MAX,D4
+    JSR DRAW_FILL_RECT * fond gris
+    JSR AFF_BTN_DIFFICULTE
+    RTS
+
 AFF_BTN_DIFFICULTE:
-    MOVE.L  #$00FF0000,D1
-    JSR SET_FILL_COLOR
-    MOVE.W  #100,D1
-    MOVE.W  #100,D2
-    MOVE.W  #200,D3
-    MOVE.W  #150,D4
-    JSR DRAW_FILL_RECT
-    MOVE.L  #$0000FF00,D1
+    MOVE.L  #CHAINE_DIFFICULTE,A1
+    MOVE.L  #$00000000,D1 
     JSR SET_FILL_COLOR
     MOVE.W  D3,D1
-    ADD.W  #50,D1 * car D3 = D1 + 100
-    ADD.W  #150,D3
-    JSR DRAW_FILL_RECT
-    MOVE.L  #$000000FF,D1
+    ASR.W   #1,D1
+    MOVE.W  D1,D3
+    ASR.W   #1,D1    
+    MOVE.W  D4,D2
+    ASR.W   #2,D2
+    MOVE.W  D2,D4
+    ASR.W   #2,D2
+    JSR DRAW_STRING
+    MOVE.W  D1,D5   * save D1
+    MOVE.L  #$00FF0000,D1 * FACILE
     JSR SET_FILL_COLOR
-    MOVE.W  D3,D1
-    ADD.W  #50,D1 
-    ADD.W  #150,D3
+    MOVE.W  D5,D1
+    ASL.W   #1,D2
+    MOVE.W  D4,D6   * espace vertical entre 2 boutons
+    MOVE.W  D2,D7   * milieu de la hauteur d'une case
+    ASR.W   #1,D7
     JSR DRAW_FILL_RECT
+    MOVE.W  D1,D5
+    ASR.W   #1,D1
+    ADD.W   D3,D1
+    ADD.W   D7,D2
+    MOVE.L  #CHAINE_FACILE,A1
+    JSR DRAW_STRING
+    MOVE.L  #$0000FF00,D1 * MOYEN
+    JSR SET_FILL_COLOR
+    MOVE.W  D5,D1
+    SUB.W   D7,D2
+    ADD.W   D6,D2
+    ADD.W   D6,D4
+    JSR DRAW_FILL_RECT
+    MOVE.W  D1,D5   * save D1
+    ASR.W   #1,D1
+    ADD.W   D3,D1
+    ADD.W   D7,D2
+    MOVE.L  #CHAINE_MOYEN,A1
+    JSR DRAW_STRING
+    MOVE.L  #$000000FF,D1 * DIFFICILE
+    JSR SET_FILL_COLOR
+    MOVE.W  D5,D1
+    SUB.W   D7,D2
+    ADD.W   D6,D2
+    ADD.W   D6,D4
+    JSR DRAW_FILL_RECT
+    MOVE.W  D1,D5   * save D1
+    ASR.W   #1,D1
+    ADD.W   D3,D1
+    ADD.W   D7,D2
+    MOVE.L  #CHAINE_DIFFICILE,A1
+    JSR DRAW_STRING
     RTS
     
 SETUP_FACILE:    * grille_facile += 25*rand(0,n-1) si on veut une grille random parmi n grilles
@@ -26,7 +74,7 @@ SETUP_FACILE:    * grille_facile += 25*rand(0,n-1) si on veut une grille random 
     MOVE.W  #90,LARGEUR_CASE
     *MOVE.W  #45,CENTRE_CASE
     MOVE.W  #25,NB_CASES
-    MOVE.W  #3,NB_BOMBES
+    MOVE.W  #3,NB_MINES
     *MOVE.W  #22,CASES_RESTANTES * affectation manuelle car bug sinon
     BRA FIN_CHOIX_DIFFICULTE
     
@@ -36,7 +84,7 @@ SETUP_MOYEN:    * grille += 100*rand(0,n-1)
     MOVE.W  #50,LARGEUR_CASE
     *MOVE.W  #25,CENTRE_CASE
     MOVE.W  #81,NB_CASES
-    MOVE.W  #10,NB_BOMBES
+    MOVE.W  #10,NB_MINES
     *MOVE.W  #71,CASES_RESTANTES
     BRA FIN_CHOIX_DIFFICULTE
     
@@ -46,7 +94,7 @@ SETUP_DIFFICILE:    * grille += 225*rand(0,n-1)
     MOVE.W  #30,LARGEUR_CASE
     *MOVE.W  #15,CENTRE_CASE
     MOVE.W  #225,NB_CASES
-    MOVE.W  #40,NB_BOMBES
+    MOVE.W  #40,NB_MINES
     *MOVE.W  #185,CASES_RESTANTES
     BRA FIN_CHOIX_DIFFICULTE
 
@@ -78,7 +126,7 @@ INTERFACE:
     ASL.W   #1,D4
     ADD.W   X_MAX,D4
     JSR DRAW_FILL_RECT * fond gris
-    MOVE.L  #$00000000,D1
+    MOVE.L  COULEUR_AFFICHEUR,D1
     JSR SET_FILL_COLOR
     MOVE.W  OX_AFFICHEUR_1,D1
     MOVE.W  OY_AFFICHEUR,D2
@@ -242,6 +290,7 @@ REPETE_CHAR_HAUTEUR:
     BNE REPETE_CHAR_LARGEUR
     JSR RESET_D
     RTS
+
 
 
 
