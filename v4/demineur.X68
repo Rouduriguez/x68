@@ -112,12 +112,14 @@ CLIC_GAUCHE:
 
     JSR GET_I
     MOVE.B  (A0,D6),N * N = contenu de la case
+    MOVE.B  #86,(A0,D6) *  remplace le contenu de la case par un 'V' -> simplifie les tests de ADJ
     MOVE.L  COULEUR_CRAYON,D1
     JSR SET_PEN_COLOR
     MOVE.L  #$00000000,D1 * COULEUR_REVELEE
     JSR SET_FILL_COLOR    
     JSR XY_CASE
     JSR DRAW_FILL_RECT
+    
     MOVE.W  D1,D3
 CMP_COULEUR_CLIC:
     CMP.B   #66,N
@@ -129,10 +131,22 @@ COULEUR_CLIC:
     ADD.W   CENTRE_CASE,D1
     ADD.W   CENTRE_CASE,D2
     JSR DRAW_STRING
-    
     SUB.W   #1,CASES_RESTANTES
+*    JSR CASES_ADJ
+*TEST_ADJ:    
+*    MOVE.W  -(A2),D6
+*    MOVE.B  (A0,D6),D0
+*    CMP.B   #$30,D0
+*    BNE SUITE_TEST_ADJ
+*    JSR XY_CASE
+*    JSR DRAW_FILL_RECT
+*    MOVE.B  #86,(A0,D6)
+*    SUB.W   #1,CASES_RESTANTES
+*SUITE_TEST_ADJ:
+*    CMP.W   #ADJ,A2
+*    BNE TEST_ADJ
+    *MOVE.L  #ADJ,A2
     JSR AFFICHE_SCORE
-    *MOVE.W  CASES_RESTANTES,D5
     CMP.W   #0,CASES_RESTANTES
     BNE ATTENTE_BOUCLE_SOURIS
     JSR VICTOIRE
@@ -213,10 +227,10 @@ COULEUR_FOND:   DC.L $00D3D3D3
 COULEUR_AFFICHEUR:  DC.L $00000000
 COULEUR_RESTART:    DC.L $0000FFFF
 N:  DC.W 0
-
 NB_CASES:   DS.W 1
 NB_MINES:  DS.W 1
 CASES_RESTANTES: DC.W 0
+ADJ:    DS.W 9
 BUFFER_CLIC:    DC.B 0
 MSG_VICTOIRE:   DC.B 'Bravo pour cette belle victoire !',0
 MSG_DEFAITE:    DC.B 'Dommage ! C est perdu...',0
@@ -229,13 +243,6 @@ CHAINE_MOYEN:   DC.B 'Moyen',0
 CHAINE_DIFFICILE: DC.B 'Difficile',0
 
     END    START 
-
-
-
-
-
-
-
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

@@ -24,6 +24,7 @@ INIT_CONST_1:
 *    MOVE.W  D2,DX_AFFICHEUR
 
     MOVE.W  #0,CHRONO
+    MOVE.L  #ADJ,A2
     RTS
     
 INIT_CONST_2:
@@ -285,7 +286,7 @@ COULEUR_NOMBRE:
     BEQ UN
     CMP.B   #$32,N
     BEQ DEUX
-    MOVE.L  #$0000A5FF,D1 * N >= 3, Ã  continuer si je dÃ©cide de mettre N>3 ?
+    MOVE.L  #$0000A5FF,D1 * N >= 3, à continuer si je décide de mettre N>3 ?
     BRA FIN_COULEUR_NOMBRE 
 ZERO:   
     MOVE.L  #$00000000,D1
@@ -310,6 +311,209 @@ VICTOIRE:
     ADD.W   #20,D2    
     JSR SET_ORIGINE_GRILLE
     JSR DRAW_STRING
+    RTS
+    
+*-----------------------------------------------------------
+* Retourne dans (A2).W l'indice des cases adjacentes a la case dont l'indice est dans D6.W
+* D5.L = etat GD..HB -> 10..10 = coin haut gauche ; 00..00 -> pas en bordure ; 01..00 -> bord gauche etc.
+* D7.W = derniere ligne
+*-----------------------------------------------------------
+      
+CASES_ADJ: 
+    *MOVE.L  #0,D7
+    MOVE.W  NB_COLONNES,D7
+    SUB.W   #1,D7     
+TEST_BORD:
+    MOVE.L  #0,D5 
+    MOVE.L  D6,D0
+    DIVU    NB_COLONNES,D0
+TEST_BORD_HB: 
+    CMP.W   #0,D0
+    BEQ ADD_BORD_HAUT
+    CMP.W   D7,D0
+    BEQ ADD_BORD_BAS
+FIN_TEST_BORD_HB:
+
+TEST_BORD_GD:
+    SWAP D5
+    SWAP    D0 
+    CMP.W   #0,D0
+    BEQ ADD_BORD_GAUCHE
+    CMP.W   D7,D0
+    BEQ ADD_BORD_DROIT
+FIN_TEST_BORD_GD:
+CMP_BORD:
+    MOVE.W  D6,D0
+    SWAP    D5
+    CMP.B   #2,D5
+    BEQ BORD_HAUT
+    CMP.B   #1,D5
+    BEQ BORD_BAS
+    SWAP    D5
+    CMP.B   #2,D5
+    BEQ BORD_G
+    CMP.B   #1,D5
+    BEQ BORD_D      
+*   8 CASES ADJACENTES
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    
+TRACER_CASES_ADJ:
+    RTS
+    
+* --------------------------------------------------
+
+BORD_HAUT:
+    SWAP    D5
+    CMP.B   #2,D5
+    BEQ COIN_HG
+    CMP.B   #1,D5
+    BEQ COIN_HD
+    JSR CASES_INF
+    JSR CASES_GD  
+    BRA TRACER_CASES_ADJ 
+    
+BORD_BAS:
+    SWAP    D5
+    CMP.B   #2,D5
+    BEQ COIN_BG
+    CMP.B   #1,D5
+    BEQ COIN_BD
+    JSR CASES_SUP
+    JSR CASES_GD
+    BRA TRACER_CASES_ADJ    
+    
+COIN_HG:    
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    BRA TRACER_CASES_ADJ
+    
+COIN_HD:    
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    BRA TRACER_CASES_ADJ 
+    
+COIN_BG:    
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    BRA TRACER_CASES_ADJ 
+    
+COIN_BD:    
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    BRA TRACER_CASES_ADJ  
+ 
+BORD_G:    
+    MOVE.W  D6,D0
+    SUB.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    BRA TRACER_CASES_ADJ 
+    
+BORD_D:    
+    MOVE.W  D6,D0
+    SUB.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #1,D0
+    MOVE.W  D0,(A2)+
+    BRA TRACER_CASES_ADJ   
+  
+ADD_BORD_HAUT:
+    ADD.B  #2,D5
+    BRA FIN_TEST_BORD_HB
+    
+ADD_BORD_BAS:
+    ADD.B  #1,D5
+    BRA FIN_TEST_BORD_HB
+    
+ADD_BORD_GAUCHE:
+    ADD.B  #2,D5
+    BRA FIN_TEST_BORD_GD
+    
+ADD_BORD_DROIT:
+    ADD.B  #1,D5
+    BRA FIN_TEST_BORD_GD   
+ 
+CASES_SUP: * i dans D6.W, retourne les cases sup dans (A2)
+    MOVE.L  #0,D0    
+    MOVE.W  D6,D0
+    SUB.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #2,D0
+    MOVE.W  D0,(A2)+
+    RTS
+    
+CASES_INF: * i dans D6.W, retourne les cases INF dans (A2)
+    MOVE.L  #0,D0    
+    MOVE.W  D6,D0
+    ADD.W   NB_COLONNES,D0
+    MOVE.W  D0,(A2)+
+    SUB.W   #1,D0
+    MOVE.W  D0,(A2)+
+    ADD.W   #2,D0
+    MOVE.W  D0,(A2)+
+    RTS
+    
+CASES_GD:
+    ADD.W   #1,D6
+    MOVE.W  D6,(A2)+
+    SUB.W   #2,D6
+    MOVE.W  D6,(A2)+
+    ADD.W   #1,D6
+    RTS
+
+CASES_HB:
+    ADD.W   NB_COLONNES,D6
+    MOVE.W  D6,(A2)+
+    SUB.W   NB_COLONNES,D6
+    SUB.W   NB_COLONNES,D6
+    MOVE.W  D6,(A2)+
+    ADD.W   NB_COLONNES,D6
     RTS
 *~Font name~Courier New~
 *~Font size~10~
