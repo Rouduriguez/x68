@@ -1,8 +1,8 @@
 *-----------------------------------------------------------
 * Description:            
-*              systeme de flag a revoir
-*              "random"
-*              cases adjacentes
+*              systeme de flag a revoir, comprendre pourquoi le test de couleur fonctionne pas
+*              "random" = incorporer quand tout est fini
+*              cases adjacentes au clic
 *-----------------------------------------------------------
 *               D1-4.W = XY ; 
 *               ---(D5 = cpt de cases restantes)--- ; 
@@ -54,7 +54,7 @@ FIN_CHARGEMENT:
     
 BOUCLE_SOURIS:
     MOVE.L  BUFFER_CHRONO,D7
-    MOVE.L  #0,BUFFER_CHRONO    
+    MOVE.L  #0,BUFFER_CHRONO    * optionnel ?
 ATTENTE_BOUCLE_SOURIS:
     ADD.L   #1,D7    
     MOVE.L  #0,D1
@@ -64,7 +64,7 @@ ATTENTE_BOUCLE_SOURIS:
     BEQ CLIC_GAUCHE
     CMP.B   #2,D0 
     BEQ CLIC_DROIT
-    CMP.L   #$00002000,D7 * 20000 = 1 sec sur mon laptop
+    CMP.L   #$6000,D7 * 20000 = 1 sec sur mon laptop
     BMI ATTENTE_BOUCLE_SOURIS    
     ADD.W   #1,CHRONO
     JSR AFFICHE_CHRONO    
@@ -74,6 +74,7 @@ CLIC_DROIT:
     SWAP    D1
     MOVE.W  D1,D2
     SWAP    D1
+    JSR GET_I
     JSR GET_PIX_COLOR  * controle la couleur de la case cliquee
     CMP.L   COULEUR_CACHEE,D0
     BEQ FLAG
@@ -81,22 +82,22 @@ CLIC_DROIT:
     BEQ DEFLAG
     BRA BOUCLE_SOURIS
 FLAG:
-    JSR GET_I
+    *JSR GET_I
     MOVE.L  COULEUR_FLAG,D1
     JSR SET_FILL_COLOR
     JSR XY_CASE
     JSR DRAW_FILL_RECT
     SUB.W   #1,NB_MINES
-    MOVE.W  NB_MINES,D5
+    MOVE.W  NB_MINES,D5 *****
     BRA BOUCLE_SOURIS
 DEFLAG:
-    JSR GET_I
+    *JSR GET_I
     MOVE.L  COULEUR_CACHEE,D1
     JSR SET_FILL_COLOR
     JSR XY_CASE
     JSR DRAW_FILL_RECT
     ADD.W   #1,NB_MINES
-    MOVE.W  NB_MINES,D5
+    MOVE.W  NB_MINES,D5 *****
     BRA BOUCLE_SOURIS  
     
 CLIC_GAUCHE:
@@ -112,7 +113,6 @@ CLIC_GAUCHE:
 
     JSR GET_I
     MOVE.B  (A0,D6),N * N = contenu de la case
-    MOVE.B  #86,(A0,D6) *  remplace le contenu de la case par un 'V' -> simplifie les tests de ADJ
     MOVE.L  COULEUR_CRAYON,D1
     JSR SET_PEN_COLOR
     MOVE.L  #$00000000,D1 * COULEUR_REVELEE
@@ -124,6 +124,7 @@ CLIC_GAUCHE:
 CMP_COULEUR_CLIC:
     CMP.B   #66,N
     BEQ DEFAITE
+    MOVE.B  #86,(A0,D6) *  remplace le contenu de la case par un 'V' -> simplifie les tests de ADJ
     JSR COULEUR_NOMBRE
 COULEUR_CLIC:
     JSR SET_FILL_COLOR
@@ -148,7 +149,7 @@ COULEUR_CLIC:
     *MOVE.L  #ADJ,A2
     JSR AFFICHE_SCORE
     CMP.W   #0,CASES_RESTANTES
-    BNE ATTENTE_BOUCLE_SOURIS
+    BNE BOUCLE_SOURIS
     JSR VICTOIRE
     BRA FIN
 FIN_BOUCLE_SOURIS: 
@@ -243,6 +244,7 @@ CHAINE_MOYEN:   DC.B 'Moyen',0
 CHAINE_DIFFICILE: DC.B 'Difficile',0
 
     END    START 
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

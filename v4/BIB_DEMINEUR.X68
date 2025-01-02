@@ -286,7 +286,7 @@ COULEUR_NOMBRE:
     BEQ UN
     CMP.B   #$32,N
     BEQ DEUX
-    MOVE.L  #$0000A5FF,D1 * N >= 3, Ã  continuer si je dÃ©cide de mettre N>3 ?
+    MOVE.L  #$0000A5FF,D1 * N >= 3, à continuer si je décide de mettre N>3 ?
     BRA FIN_COULEUR_NOMBRE 
 ZERO:   
     MOVE.L  #$00000000,D1
@@ -515,3 +515,8 @@ CASES_HB:
     MOVE.W  D6,(A2)+
     ADD.W   NB_COLONNES,D6
     RTS
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
